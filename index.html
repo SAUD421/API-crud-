@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stories List</title>
+    <style>
+       /* Body styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f7fc;
+    margin: 0;
+    padding: 20px;
+    color: #333;
+}
+
+/* Title */
+h1 {
+    text-align: center;
+    color: #4CAF50;
+    font-size: 32px;
+    margin-bottom: 20px;
+}
+
+/* Form container styles */
+.form-container {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    width: 50%;
+    margin: 20px auto;
+}
+
+/* Form fields */
+.input-field {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: border-color 0.3s;
+}
+
+.input-field:focus {
+    border-color: #4CAF50;
+}
+
+/* Submit button */
+.add-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    font-size: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s;
+}
+
+.add-button:hover {
+    background-color: #45a049;
+}
+
+/* Table styles */
+table {
+    width: 80%;
+    margin: 40px auto;
+    border-collapse: collapse;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Table header styles */
+th {
+    background-color: #4CAF50;
+    color: white;
+    text-align: left;
+    padding: 12px;
+}
+
+/* Table cell styles */
+td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Row hover effect */
+tr:hover {
+    background-color: #f9f9f9;
+}
+
+/* Edit and delete button styles */
+.edit-button, .delete-button {
+    padding: 8px 12px;
+    margin: 0 5px;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.edit-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+}
+
+.delete-button {
+    background-color: #f44336;
+    color: white;
+    border: none;
+}
+
+.edit-button:hover {
+    background-color: #45a049;
+}
+
+.delete-button:hover {
+    background-color: #e60000;
+}
+
+/* Action button container */
+td button {
+    margin: 0 5px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .form-container {
+        width: 90%;
+    }
+
+    table {
+        width: 90%;
+    }
+}
+
+    </style>
+</head>
+<body>
+    <h1>Stories List</h1>
+
+    <!-- Add New Story Form -->
+    <div class="form-container">
+        <h2>Add New Story</h2>
+        <form id="addStoryForm">
+            <input type="text" id="newTitle" class="input-field" placeholder="Title" required />
+            <textarea id="newContent" class="input-field" placeholder="Content" required></textarea>
+            <button type="submit" class="add-button">Add Story</button>
+        </form>
+    </div>
+
+    <table id="storiesTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Content</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be inserted here dynamically -->
+        </tbody>
+    </table>
+
+    <script>
+        // Function to fetch and display stories from the API
+        async function fetchStories() {
+            try {
+                const response = await fetch('https://usmanlive.com/wp-json/api/stories');
+                const stories = await response.json();
+
+                const tableBody = document.querySelector("#storiesTable tbody");
+
+                // Loop through the data and create table rows
+                stories.forEach(story => {
+                    const row = document.createElement("tr");
+
+                    const idCell = document.createElement("td");
+                    idCell.textContent = story.id;
+
+                    const titleCell = document.createElement("td");
+                    titleCell.textContent = story.title;
+
+                    const contentCell = document.createElement("td");
+                    contentCell.textContent = story.content;
+
+                    const actionCell = document.createElement("td");
+                    const editButton = document.createElement("button");
+                    editButton.textContent = "Edit";
+                    editButton.classList.add("edit-button");
+
+                    const deleteButton = document.createElement("button");
+                    deleteButton.textContent = "Delete";
+                    deleteButton.classList.add("delete-button");
+
+                    // Add edit button functionality
+                    editButton.onclick = () => editRow(row, story);
+
+                    // Add delete button functionality
+                    deleteButton.onclick = () => deleteRow(row, story.id);
+
+                    actionCell.appendChild(editButton);
+                    actionCell.appendChild(deleteButton);
+
+                    row.appendChild(idCell);
+                    row.appendChild(titleCell);
+                    row.appendChild(contentCell);
+                    row.appendChild(actionCell);
+
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Error fetching stories:", error);
+            }
+        }
+
+        // Function to edit a row's content
+        function editRow(row, story) {
+            const titleCell = row.cells[1];
+            const contentCell = row.cells[2];
+
+            const titleInput = document.createElement("input");
+            titleInput.value = titleCell.textContent;
+            titleInput.classList.add("input-field");
+
+            const contentInput = document.createElement("textarea");
+            contentInput.value = contentCell.textContent;
+            contentInput.classList.add("input-field");
+
+            titleCell.textContent = "";
+            contentCell.textContent = "";
+            titleCell.appendChild(titleInput);
+            contentCell.appendChild(contentInput);
+
+            const editButton = row.cells[3].querySelector(".edit-button");
+            editButton.textContent = "Save";
+            editButton.onclick = () => saveRow(row, story, titleInput, contentInput);
+        }
+
+        // Function to save the edited data
+        async function saveRow(row, story, titleInput, contentInput) {
+            story.title = titleInput.value;
+            story.content = contentInput.value;
+
+            row.cells[1].textContent = story.title;
+            row.cells[2].textContent = story.content;
+
+            const saveButton = row.cells[3].querySelector(".edit-button");
+            saveButton.textContent = "Edit";
+            saveButton.onclick = () => editRow(row, story);
+
+            try {
+                const response = await fetch(`https://usmanlive.com/wp-json/api/stories/${story.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id: story.id,
+                        title: story.title,
+                        content: story.content
+                    })
+                });
+
+                if (response.ok) {
+                    alert("Story updated successfully!");
+                } else {
+                    alert("Failed to update story.");
+                }
+            } catch (error) {
+                console.error("Error updating story:", error);
+                alert("An error occurred while updating the story.");
+            }
+        }
+
+        // Function to delete a row from the table and the API
+        async function deleteRow(row, storyId) {
+            const confirmDelete = confirm("Are you sure you want to delete this story?");
+            if (!confirmDelete) return; // Do nothing if the user cancels
+
+            try {
+                const response = await fetch(`https://usmanlive.com/wp-json/api/stories/${storyId}`, {
+                    method: 'DELETE',
+                });
+
+                if (response.ok) {
+                    row.remove(); // Remove the row from the table
+                    alert("Story deleted successfully!");
+                } else {
+                    alert("Failed to delete story.");
+                }
+            } catch (error) {
+                console.error("Error deleting story:", error);
+                alert("An error occurred while deleting the story.");
+            }
+        }
+
+        // Function to add a new story to the table and the API
+        async function addNewStory(event) {
+            event.preventDefault(); // Prevent form submission
+
+            const title = document.getElementById("newTitle").value;
+            const content = document.getElementById("newContent").value;
+
+            // Send a POST request to the API to add the new story
+            try {
+                const response = await fetch('https://usmanlive.com/wp-json/api/stories', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        content: content
+                    })
+                });
+
+                if (response.ok) {
+                    const newStory = await response.json(); // Get the new story from the response
+                    const tableBody = document.querySelector("#storiesTable tbody");
+
+                    const row = document.createElement("tr");
+                    const idCell = document.createElement("td");
+                    idCell.textContent = newStory.id;
+
+                    const titleCell = document.createElement("td");
+                    titleCell.textContent = newStory.title;
+
+                    const contentCell = document.createElement("td");
+                    contentCell.textContent = newStory.content;
+
+                    const actionCell = document.createElement("td");
+                    const editButton = document.createElement("button");
+                    editButton.textContent = "Edit";
+                    editButton.classList.add("edit-button");
+
+                    const deleteButton = document.createElement("button");
+                    deleteButton.textContent = "Delete";
+                    deleteButton.classList.add("delete-button");
+
+                    // Add edit button functionality
+                    editButton.onclick = () => editRow(row, newStory);
+
+                    // Add delete button functionality
+                    deleteButton.onclick = () => deleteRow(row, newStory.id);
+
+                    actionCell.appendChild(editButton);
+                    actionCell.appendChild(deleteButton);
+
+                    row.appendChild(idCell);
+                    row.appendChild(titleCell);
+                    row.appendChild(contentCell);
+                    row.appendChild(actionCell);
+
+                    tableBody.appendChild(row);
+
+                    // Clear the form
+                    document.getElementById("addStoryForm").reset();
+                    alert("Story added successfully!");
+                } else {
+                    alert("Failed to add story.");
+                }
+            } catch (error) {
+                console.error("Error adding new story:", error);
+                alert("An error occurred while adding the story.");
+            }
+        }
+
+        // Add event listener to the add story form
+        document.getElementById("addStoryForm").addEventListener("submit", addNewStory);
+
+        // Fetch and display stories when the page loads
+        window.onload = fetchStories;
+    </script>
+</body>
+</html>
